@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Pessoas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Cadastro</h2>
+  <input type="text" id="nome" placeholder="Nome">
+  <select id="area">
+    <option value="louvor">Louvor</option>
+    <option value="testemunho">Testemunho</option>
+  </select>
+
+  <button onclick="adicionarPessoa()">Adicionar</button>
+
+  <h2>Áreas</h2>
+  <div class="area">
+    <h3>Louvor</h3>
+    <div id="louvor-lista"></div>
+  </div>
+
+  <div class="area">
+    <h3>Testemunho</h3>
+    <div id="testemunho-lista"></div>
+  </div>
+  
+
+
+  <script>
+    const API_URL = "http://localhost:3000/pessoas";
+
+    async function carregarPessoas() {
+      const res = await fetch(API_URL);
+      const pessoas = await res.json();
+
+      document.getElementById("louvor-lista").innerHTML = "";
+      document.getElementById("testemunho-lista").innerHTML = "";
+
+      pessoas.forEach(p => {
+        const div = document.createElement("div");
+        div.classList.add("pessoa");
+        div.innerHTML = `
+          <span>${p.nome}</span>
+          <button onclick="excluirPessoa(${p.id})">X</button>
+        `;
+        document.getElementById(p.area + "-lista").appendChild(div);
+      });
+    }
+
+    async function adicionarPessoa() {
+      const nome = document.getElementById("nome").value;
+      const area = document.getElementById("area").value;
+
+      if (!nome) return alert("Digite um nome!");
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, area })
+      });
+
+      document.getElementById("nome").value = "";
+      carregarPessoas();
+    }
+
+    async function excluirPessoa(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      carregarPessoas();
+    }
+
+    carregarPessoas();
+  </script>
+</body>
+</html>
